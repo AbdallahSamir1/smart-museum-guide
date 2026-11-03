@@ -1,0 +1,23 @@
+{
+ "golden_mask.jpg": {
+  "source": "https://commons.wikimedia.org/wiki/File:Mask_of_Tutankhamun_in_2025.jpg",
+  "author": "Dawid Wdowczyk",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0",
+  "changes": "resized to 800 px"
+ },
+ "throne.jpg": {
+  "source": "https://commons.wikimedia.org/wiki/File:Respaldo_del_trono_de_oro_de_Tutankam%C3%B3n.jpg",
+  "author": "Djehouty",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "changes": "resized to 800 px"
+ },
+ "sarcophagus.jpg": {
+  "source": "https://commons.wikimedia.org/wiki/File:Tutankhamun_KV62_burial_chamber_and_sarcophagus.jpg",
+  "author": "Romagy",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "changes": "resized to 800 px, cropped"
+ }
+}

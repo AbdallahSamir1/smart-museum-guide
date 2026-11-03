@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Museum Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- not render-blocking: without internet the page still opens at once, with the system fonts -->
+<link rel="stylesheet" media="print" onload="this.media='all'"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=Playfair+Display:wght@700&family=Cairo:wght@400;700&display=swap">
+<style>
+  /* The five screens of the Phase 1 Figma design on a 960 x 600 stage, scaled to the window.
+     No hand in the picture is a small dot at the top (grey / green), not a screen of its own.
+     The colours come from context.py: every theme key becomes a CSS variable (warn_bg -> --warn-bg). */
+  :root { --bg:#0f1726; --card:#1b2a41; --border:#2c3d5a; --text:#fff; --muted:#8ea0b8; --gold:#e3b55a;
+          --warn-bg:#3a2f17; --warn-text:#e3b55a; --accent:#1f8f86; --accent-soft:#d5efec; --accent-dark:#145c56;
+          --accent-text:#6fe0c0; --accent-light:#6fe0c0; --frame:#6fe0c0; --s:1; }
+  * { box-sizing: border-box; margin: 0; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; background: #05080f; overflow: hidden; }
+  body { display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 36px;
+         font-family: 'DM Sans', 'Cairo', 'Segoe UI', sans-serif; }
+  #stage { width: 960px; height: 600px; flex: none; display: flex; flex-direction: column; position: relative;
+           padding: 32px 40px 20px; overflow: hidden; background: var(--bg); color: var(--text);
+           transform-origin: center; transition: background .3s, color .3s; }
+  #stage[dir=rtl] { font-family: 'Cairo', 'DM Sans', 'Segoe UI', sans-serif; --to: to left; }
+  .h { font-family: 'Playfair Display', 'Cairo', serif; font-weight: 700; line-height: 1.15; }
+  #stage[dir=rtl] .h { font-family: 'Cairo', serif; }
+
+  /* top bar, main area, gesture bar */
+  .top { flex: none; height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .top .h { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chips { display: flex; gap: 10px; flex: none; }
+  .chip { padding: 8px 16px; border-radius: 999px; background: var(--card); border: 1.5px solid var(--border);
+          color: var(--text); font-size: 15px; font-weight: 700; line-height: 1.3; white-space: nowrap; }
+  .ok { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--accent-text); border-color: transparent; }
+  .warn { background: var(--warn-bg); color: var(--warn-text); border-color: transparent; }
+  .ok::before, .warn::before { content: "● "; }
+  .main { flex: 1; min-height: 0; margin-top: 14px; display: flex; position: relative; }
+  .main.col { flex-direction: column; }
+  .bar { flex: none; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border);
+         display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .bar b { font-size: calc(17px * min(var(--s), 1.3)); margin-inline-end: 4px; }
+  /* the chip of a thumb up / fist being held fills up like the ring (--hp, set by paintHold) */
+  .bar .chip { font-weight: 400; font-size: calc(16px * min(var(--s), 1.3));
+               background: linear-gradient(var(--to, to right), color-mix(in srgb, var(--accent) 45%, var(--card)) var(--hp, 0%),
+                                           var(--card) var(--hp, 0%)); }
+  .hold { margin-inline-start: auto; font-size: 14px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+
+  /* shared parts */
+  .label { font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  #stage[dir=rtl] .label { letter-spacing: 0; }             /* letter-spacing breaks the joined Arabic letters */
+  .muted { color: var(--muted); }
+  .card { background: var(--card); border: 2px solid var(--border); border-radius: 16px; position: relative; }
+  .sel { background: var(--accent); border: 3px solid var(--accent-text); color: #fff; }
+  .ring { position: absolute; width: 32px; height: 32px; border-radius: 50%; pointer-events: none;
+          background: radial-gradient(circle, var(--bg) 0 11px, transparent 11.5px),
+                      conic-gradient(var(--accent-text) calc(var(--p, 0) * 1turn), color-mix(in srgb, var(--accent-text) 22%, var(--bg)) 0); }
+  .ring.corner { top: -10px; inset-inline-end: -10px; }
+  .ring.inside { top: 10px; inset-inline-end: 10px; }
+  .ring.lazy.zero { visibility: hidden; }
+  .photo { background: linear-gradient(135deg, #e3b55a, #b8862d); border-radius: 22px; position: relative; flex: none; }
+  .photo.real { background: #222 center / cover no-repeat; }
+  .photo.real .tag { white-space: normal; font-size: 11px; font-weight: 600; }
+  .facts { margin: 0; padding-inline-start: 20px; font-size: 15px; line-height: 1.45; color: var(--muted, inherit); }
+  .photo.framed::before { content: ""; position: absolute; inset: 12px; border: 2px solid var(--frame); border-radius: 14px; }
+  .tag { position: absolute; bottom: 14px; left: 14px; max-width: calc(100% - 28px); overflow: hidden; text-overflow: ellipsis;
+         white-space: nowrap; direction: ltr; background: rgba(0,0,0,.55); color: #fff; padding: 4px 10px; border-radius: 8px;
+         font: 700 12px 'DM Sans', 'Segoe UI', sans-serif; }
+  .framed .tag { bottom: 24px; left: 24px; max-width: calc(100% - 48px); }
+  .preview { background: linear-gradient(160deg, #3b475b, #252e3d); border-radius: 16px; position: relative; overflow: hidden; flex: none; }
+  .side { display: flex; flex-direction: column; flex: none; }
+
+  /* 1 welcome */
+  .s1row { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; gap: 48px; }
+  .circle { width: 280px; height: 280px; border-radius: 50%; background: var(--card); display: grid; place-items: center; flex: none; }
+  .circle svg { stroke: var(--gold); }
+  .waving svg { animation: wave 1.6s ease-in-out infinite; transform-origin: 50% 90%; }
+  @keyframes wave { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(15deg); } 75% { transform: rotate(-15deg); } }
+  @media (prefers-reduced-motion: reduce) { .waving svg { animation: none; } }
+  .s1text { flex: 0 1 552px; min-width: 0; }
+  .hello { font-size: 22px; font-weight: 700; color: var(--accent-text); margin-bottom: 4px; }
+  .s1title { font-size: 56px; line-height: 1.08; text-wrap: balance; }
+  .s1sub { font-size: 24px; color: var(--muted); margin: 12px 0 22px; }
+  .langs { display: flex; gap: 15px; margin-top: 10px; }
+  .lang { width: 160px; height: 78px; display: grid; place-items: center; font-size: 27px; font-weight: 700; }
+  .lang.ar { font-family: 'Cairo', sans-serif; }
+  .privacy { flex: none; margin-top: 10px; text-align: center; font-size: 17px; color: var(--muted); }
+
+  /* 2 who is visiting */
+  .s2sub { font-size: 21px; color: var(--muted); margin-bottom: 18px; }
+  .types { display: flex; gap: 20px; }
+  .type { width: 280px; height: 184px; flex: none; text-align: center; padding: 20px 14px 0; transition: opacity .2s; }
+  .icon { height: 54px; display: grid; place-items: center; color: var(--accent-text); }
+  .sel .icon { color: var(--accent-light); }
+  .aa { font: 700 46px/54px 'DM Sans', 'Segoe UI', sans-serif; }
+  .type .t { font-size: calc(24px * min(var(--s), 1.15)); font-weight: 700; margin-top: 10px; }
+  .type .d { font-size: calc(17px * min(var(--s), 1.15)); color: var(--muted); margin-top: 6px; }
+  .sel .d { color: #fff; opacity: .85; }
+  .genders { display: flex; align-items: center; gap: 16px; margin-top: 24px; transition: opacity .2s; }
+  .pills { display: flex; gap: 16px; }
+  .pill { height: 51px; padding: 0 26px; border-radius: 999px; display: flex; align-items: center;
+          font-size: calc(23px * min(var(--s), 1.15)); font-weight: 700; }
+
+  /* 3 find your exhibit */
+  .box { position: absolute; bottom: 88px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .btag { width: max-content; background: #6c7a96; color: #fff; font-size: 17px; font-weight: 700; line-height: 1.3;
+          padding: 3px 10px; border-radius: 8px; text-align: center; text-wrap: balance; }
+  .bframe { width: 100%; border: 2px solid #6c7a96; border-radius: 14px; }
+  .box.on .btag { background: var(--accent-light); color: #0f1726; }
+  .box.on .bframe { border: 4px solid var(--accent-light); background: color-mix(in srgb, var(--accent) 45%, #13202b); }
+  .me { position: absolute; bottom: 42px; left: 50%; transform: translateX(-50%); }
+  .here { position: absolute; bottom: 15px; left: 0; right: 0; text-align: center; color: #fff; font-size: 15px; font-weight: 700; }
+  .item { min-height: 50px; display: flex; align-items: center; padding: 6px 16px; margin-top: 12px;
+          font-size: calc(20px * min(var(--s), 1.15)); font-weight: 700; line-height: 1.2; }
+  .hint { font-size: calc(19px * min(var(--s), 1.15)); color: var(--muted); margin-top: 16px; }
+
+  /* 4 is this the one */
+  .s4col { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+  .s4name { font-size: calc(40px * min(var(--s), 1.2)); margin: 8px 0 6px; }
+  .sure { font-size: 20px; color: var(--muted); margin-bottom: 22px; }
+  .picks { display: flex; gap: 20px; }
+  .pick { width: 227px; height: 176px; flex: none; display: flex; flex-direction: column; align-items: center;
+          justify-content: center; gap: 4px; padding: 0 12px; text-align: center; }
+  .pick.on { background: color-mix(in srgb, var(--accent) 28%, var(--card)); border: 3px solid var(--accent-text); }
+  .pi { height: 50px; margin-bottom: 6px; color: var(--muted); }
+  .pick.on .pi { color: var(--accent-text); }
+  .pi.down svg { transform: rotate(180deg); }
+  .pick .t { font-size: calc(23px * min(var(--s), 1.15)); font-weight: 700; }
+  .pick .d { font-size: calc(17px * min(var(--s), 1.15)); color: var(--muted); }
+
+  /* 5 the story */
+  .s5col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .s5name { flex: none; font-size: calc(42px * min(var(--s), 1.2)); }
+  #story { flex: 1; min-height: 0; overflow: hidden; margin-top: 10px; line-height: 1.5;
+           font-size: calc(25px * var(--s) * var(--fit, 1)); }
+  .np { flex: none; min-height: 51px; display: flex; align-items: center; gap: 16px; padding: 6px 18px; margin-top: 12px; border: none; }
+  .track { flex: 1 0 80px; height: 11px; border-radius: 6px; background: var(--border); overflow: hidden; }
+  #np-fill { height: 100%; width: 0; background: var(--gold); border-radius: 6px; transition: width .2s linear; }
+  #np-label { flex: 0 1 auto; min-width: 0; font-size: 20px; line-height: 1.2; }
+
+  /* the live camera picture under the exhibit boxes of screen 3 (the boxes stay on top) */
+  #cam { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .8; }
+  .preview .box, .preview .me, .preview .here, .preview .tag { z-index: 1; }
+  .preview .here { text-shadow: 0 1px 3px #000; }
+
+  /* the hand dot, the movement just seen, and a tip when a movement was not a command */
+  #dot { position: absolute; top: 10px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%;
+         z-index: 4; background: #6c7a96; box-shadow: 0 0 0 3px color-mix(in srgb, #6c7a96 30%, transparent);
+         transition: background .2s, box-shadow .2s; }
+  #dot.on { background: #3ddc84; box-shadow: 0 0 0 3px rgba(61,220,132,.3), 0 0 14px 3px rgba(61,220,132,.75); }
+  .pop { position: absolute; left: 50%; z-index: 4; transform: translate(-50%, 8px); opacity: 0; pointer-events: none;
+         transition: opacity .2s, transform .2s; padding: 10px 22px; border-radius: 999px; white-space: nowrap;
+         font-size: 24px; font-weight: 700; box-shadow: 0 6px 24px rgba(0,0,0,.35); }
+  .pop.show { opacity: 1; transform: translate(-50%, 0); }
+  #toast { bottom: 92px; background: var(--accent); color: #fff; }
+  #tip { bottom: 92px; background: var(--warn-bg); color: var(--warn-text); border: 1.5px solid var(--warn-text); font-size: 20px; }
+
+  /* no hub yet */
+  .waiting { margin: auto; text-align: center; display: flex; flex-direction: column; gap: 22px; }
+  .waiting .h { font-size: 34px; }
+  .waiting [lang=ar] .h { font-family: 'Cairo', serif; }
+  .waiting .muted { font-size: 16px; margin-top: 6px; }
+
+  /* outside the stage: the reconnect banner, the context line, the guide link and the voice button */
+  #link { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 5; max-width: 92vw; text-align: center;
+          background: #3a2f17; color: #f1d9a6; border: 1px solid #e3b55a; border-radius: 12px; padding: .6em 1.2em;
+          font: clamp(15px, 1.5vw, 26px) 'DM Sans', 'Cairo', 'Segoe UI', sans-serif; box-shadow: 0 6px 24px rgba(0,0,0,.45); }
+  #link[dir=rtl] { font-family: 'Cairo', 'Segoe UI', sans-serif; }
+  #link b { display: block; font-size: 1.2em; }
+  #ctx { position: fixed; bottom: 8px; left: 160px; right: 160px; text-align: center; white-space: nowrap; overflow: hidden;
+         text-overflow: ellipsis; pointer-events: none; color: #8ea0b8; font: 13px 'DM Sans', 'Segoe UI', sans-serif; }
+  #guide-link { position: fixed; bottom: 5px; right: 12px; padding: 2px 10px; border: 1px solid #2c3d5a; border-radius: 999px;
+                color: #8ea0b8; text-decoration: none; font: 700 13px 'DM Sans', 'Cairo', 'Segoe UI', sans-serif; }
+  #guide-link:hover, #guide-link:focus { color: #fff; border-color: #8ea0b8; }
+  #voice-btn { position: fixed; bottom: 3px; left: 12px; padding: 1px 12px; border-radius: 999px; cursor: pointer;
+               background: #3a2f17; color: #f1d9a6; border: 1px solid #e3b55a; font-size: 16px; }
+</style>
+</head>
+<body>
+<div id="link" role="status" hidden></div>
+<div id="stage"><div id="screen" style="display:contents"></div>
+  <div id="dot" role="status"></div><div id="toast" class="pop"></div><div id="tip" class="pop" role="status"></div></div>
+<div id="cam-home" hidden><img id="cam" alt=""></div>
+<div id="ctx"><span id="ctx-main"></span><span id="ctx-voice"></span></div>
+<a id="guide-link" href="guide.html?lang=en">📖 <span id="guide-text">Gesture guide</span></a>
+<button id="voice-btn" type="button" title="Turn the voice on" hidden>🔊</button>
+<script>
+const stage = document.getElementById('stage'), screenEl = document.getElementById('screen');
+const $ = id => document.getElementById(id);
+function fit() {
+  const k = Math.min(innerWidth / 960, (innerHeight - 40) / 600);
+  stage.style.transform = `scale(${k})`;
+}
+addEventListener('resize', fit); fit();
+
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const LANG_BTN = {English: 'English', Arabic: 'العربية', French: 'Français'};
+const LANG_CODE = {English: 'en', Arabic: 'ar', French: 'fr'};
+// the bar chips that fill while a thumb up or a fist is held (the camera window shows the same ring)
+const POSE_KEYS = {thumb_up: ['gx_choose', 'gx_yes', 'gx_detail'], fist: ['gx_finish', 'gk_done']};
+const PERSON = '<circle cx="12" cy="7.5" r="3.5"/><path d="M5 20.5c0-4 3.1-6.5 7-6.5s7 2.5 7 6.5"/>';
+const ICON = {
+  person: `<svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">${PERSON}</svg>`,
+  people: '<svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">' +
+          '<circle cx="8.5" cy="7.5" r="3.2"/><path d="M2.5 20.5c0-3.8 2.6-6.3 6-6.3s6 2.5 6 6.3"/>' +
+          '<circle cx="17.3" cy="10.4" r="2.3"/><path d="M15.2 15.1c.6-.2 1.3-.3 2.1-.3 2.6 0 4.2 2 4.2 5.7"/></svg>',
+  hand: '<svg width="108" height="126" viewBox="0 0 120 140" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M30 80V30M55 80V14M80 80V10M105 80V28"/><path d="M30 80q0 50 38 50q37 0 37-50"/><path d="M30 70Q8 58 6 44q8-8 20 4l4 8"/></svg>',
+  me: `<svg class="me" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">${PERSON}</svg>`,
+};
+
+const ring = (pose = 'wave', where = 'corner', lazy = false) =>
+  `<span class="ring ${where}${lazy ? ' lazy zero' : ''}" data-pose="${pose}"></span>`;
+const chip = (text, cls = '') => `<span class="chip ${cls}">${esc(text)}</span>`;
+const viewChip = (s, L) => chip(s.view === 'evening' ? L.v_evening : L.v_day);
+const pct = (s, e) => typeof (s.confidence || {})[e] === 'number' ? Math.round(s.confidence[e] * 100) : null;
+function header(title, chips, size = 38) {
+  return `<div class="top"><div class="h" style="font-size:${size}px">${esc(title)}</div><div class="chips">${chips.join('')}</div></div>`;
+}
+function bar(s, c) {
+  const keys = c.gesture_keys || [];
+  const chips = c.gesture_bar.map((g, i) => `<span class="chip" data-k="${esc(keys[i] || '')}">${esc(g)}</span>`).join('');
+  const note = s.pace === 'slow' ? `<span class="hold">⏱ ${esc(c.labels.slow_pace)}</span>` : '';
+  return `<div class="bar"><b>${esc(c.labels.gestures)}:</b>${chips}${note}</div>`;
+}
+
+const screens = {
+  1(s, c) {
+    const L = c.labels, hello = s.returning ? L.back_welcome : (s.gender ? L.welcome : '');
+    // the rows the visitor swipes through stay left to right in every language: a swipe to the right goes right
+    return header(L.app, [], 28) + `
+      <div class="main col">
+        <div class="s1row">
+          <div class="circle${s.started ? '' : ' waving'}" style="position:relative">${ICON.hand}${s.started ? '' : ring('wave', 'inside', true)}</div>
+          <div class="s1text">
+            ${hello ? `<div class="hello">${esc(hello)}</div>` : ''}
+            <div class="h s1title">${esc(L.s1_title)}</div>
+            <div class="s1sub">${esc(L.s1_sub)}</div>
+            <div class="label" style="font-size:17px">${esc(L.s1_lang)}</div>
+            <div class="langs" dir="ltr" style="justify-content:${c.dir === 'rtl' ? 'flex-end' : 'flex-start'}">${Object.keys(LANG_BTN).map(k => `
+              <div class="card lang${k === 'Arabic' ? ' ar' : ''}${s.highlight === k ? ' sel' : ''}" dir="${c.dir}">${LANG_BTN[k]}</div>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="privacy">${esc(L.s1_privacy)}</div>
+      </div>` + bar(s, c);
+  },
+  2(s, c) {
+    const L = c.labels, typeStep = s.who_step === 'type';
+    const types = [['adult', L.t_adult, L.d_adult, ICON.person], ['children', L.t_children, L.d_children, ICON.people],
+                   ['older', L.t_older, L.d_older, '<span class="aa">Aa</span>']];
+    const genders = [['woman', L.g_woman], ['man', L.g_man], ['skip', L.g_skip]];
+    const on = k => typeStep ? s.highlight === k : s.visitor_type === k;
+    return header(L.s2_title, [viewChip(s, L)]) + `
+      <div class="main col">
+        <div class="s2sub">${esc(L.s2_sub)}</div>
+        <div class="types" dir="ltr">${types.map(([k, t, d, ic]) => `
+          <div class="card type${on(k) ? ' sel' : ''}" dir="${c.dir}" style="opacity:${typeStep || on(k) ? 1 : .45}">
+            <div class="icon">${ic}</div><div class="t">${esc(t)}</div><div class="d">${esc(d)}</div></div>`).join('')}
+        </div>
+        <div class="genders" style="opacity:${typeStep ? .5 : 1}">
+          <div class="label">${esc(L.s2_gender)}</div>
+          <div class="pills" dir="ltr">${genders.map(([k, t]) => {
+            const sel = !typeStep && s.highlight === k;
+            return `<div class="card pill${sel ? ' sel' : ''}" dir="${c.dir}">${esc(t)}</div>`;
+          }).join('')}</div>
+        </div>
+      </div>` + bar(s, c);
+  },
+  3(s, c) {
+    const L = c.labels, n = s.exhibits.length, W = 598;
+    const step = Math.min(195, (W - 40) / n), x0 = (W - n * step) / 2;
+    const name = e => c.exhibit_names[e] || e;
+    // the camera box shows the short name ("Golden Mask 94%" in the design), the list the full name
+    const tag = e => { const p = pct(s, e); return ((c.exhibit_tags || {})[e] || name(e)) + (p === null ? '' : ` ${p}%`); };
+    // the camera picture is not text: the boxes keep the camera's left and right in every language
+    const boxes = s.exhibits.map((e, i) => {
+      const on = s.highlight === e, w = step - (on ? 36 : 56);
+      return `<div class="box${on ? ' on' : ''}" style="left:${(x0 + i * step + (step - w) / 2).toFixed(1)}px;width:${w.toFixed(1)}px">
+        <div class="btag" dir="${c.dir}" style="max-width:${(step - 10).toFixed(1)}px">${esc(tag(e))}</div><div class="bframe" style="height:${on ? 220 : 185}px"></div></div>`;
+    }).join('');
+    // the live camera picture (#cam) is put under the boxes after drawing, see placeCamera()
+    return header(L.s3_title, [chip(`${n} ${L.exhibits_found}`, 'warn')]) + `
+      <div class="main" style="gap:22px">
+        <div class="preview" id="preview" style="width:${W}px;max-height:408px">${boxes}${ICON.me}
+          <div class="here">${esc(L.you_here)}</div><span class="tag" id="cam-tag">${esc(L.camera_off)}</span></div>
+        <div class="side" style="width:260px">
+          <div class="label">${esc(L.nearest)}</div>
+          ${s.exhibits.map(e => `<div class="card item${s.highlight === e ? ' sel' : ''}">${esc(name(e))}</div>`).join('')}
+          <div class="hint">${esc(L.s3_hint)}</div>
+        </div>
+      </div>` + bar(s, c);
+  },
+  4(s, c) {
+    const L = c.labels, ex = c.exhibit, p = pct(s, s.exhibit);
+    // the real photo of the piece with its credit (author and licence, web/photos/CREDITS.json)
+    const sure = (p === null ? '' : L.sure.replace('{n}', p) + '. ') + (ex ? `${L.hall} ${ex.hall}.` : '');
+    return header(L.s4_title, []) + `
+      <div class="main" style="gap:24px">
+        ${photoBox(ex, '', 'width:380px;max-height:407px')}
+        <div class="s4col">
+          <div class="label" style="font-size:17px">${esc(L.you_chose)}</div>
+          <div class="h s4name">${esc(ex ? ex.name : s.exhibit)}</div>
+          <div class="sure">${esc(sure)}</div>
+          <div class="picks">
+            <div class="card pick on"><div class="pi" style="font-size:42px">👍</div><div class="t">${esc(L.s4_yes)}</div>
+              <div class="d">${esc(L.gx_yes)}</div></div>
+            <div class="card pick"><div class="pi" style="font-size:42px">👎</div><div class="t">${esc(L.s4_no)}</div>
+              <div class="d">${esc(L.gx_no)}</div></div>
+          </div>
+        </div>
+      </div>` + bar(s, c);
+  },
+  5(s, c) {
+    const L = c.labels, ex = c.exhibit || {name: '', hall: '', story: ''}, big = c.text_scale > 1.4;
+    const voice = c.voice === 'male' ? L.voice_male : L.voice_female;
+    const w = big ? (s.detail ? 0 : 190) : 340;          // very large text: a small photo, none with the extra detail
+    const photo = w ? photoBox(ex, ' framed', `width:${w}px;max-height:364px`) : '';
+    const facts = !big && !s.detail && (ex.facts || []).length
+      ? `<ul class="facts">${ex.facts.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : '';
+    return header(`${L.hall} ${ex.hall}`, [viewChip(s, L), chip('🔊 ' + voice), chip(L.ex_ok, 'ok')], 22) + `
+      <div class="main" style="gap:26px">${photo}
+        <div class="s5col" style="max-height:${big ? 'none' : '364px'}">
+          <div class="h s5name">${esc(ex.name)}</div>
+          <div id="story">${esc(ex.story)}</div>${facts}
+          <div class="card np"><div class="track"><div id="np-fill" style="width:${storyPct().toFixed(1)}%"></div></div><b id="np-label"></b></div>
+        </div>
+      </div>` + bar(s, c);
+  },
+};
+
+function photoBox(ex, cls, style) {
+  if (!ex || !ex.photo) return `<div class="photo${cls}" style="${style}"></div>`;
+  return `<div class="photo real${cls}" style="${style};background-image:url('${esc(ex.photo)}')">` +
+         `<span class="tag" title="${esc(ex.credit || '')}">${esc(ex.credit || '')}</span></div>`;
+}
+
+// ---------- the hub is not reached yet, or the connection was lost ----------
+const WAIT = [
+  ['en', 'ltr', 'Waiting for the guide…', 'Staff: start <bdi>run_full_system.bat</bdi> (or <bdi>python server.py</bdi>).'],
+  ['ar', 'rtl', 'في انتظار الدليل…', 'للموظفين: يجب تشغيل <bdi>run_full_system.bat</bdi> (أو <bdi>python server.py</bdi>).'],
+  ['fr', 'ltr', 'En attente du guide…', 'Personnel : lancez <bdi>run_full_system.bat</bdi> (ou <bdi>python server.py</bdi>).'],
+];
+const LINK_TEXT = {
+  English: ['Reconnecting to the guide… one moment.', 'Staff: if this stays, start run_full_system.bat again.'],
+  Arabic: ['جارٍ إعادة الاتصال بالدليل… لحظة من فضلك.', 'للموظفين: إذا استمرت هذه الرسالة، يجب تشغيل run_full_system.bat مرة أخرى.'],
+  French: ['Reconnexion au guide… un instant.', 'Personnel : si ce message reste, relancez run_full_system.bat.'],
+};
+const link = {es: false, hub: false};    // the page reaches ui_web.py / ui_web.py reaches the hub
+let hasState = false, lastLang = 'English', downSince = 0, shown = '';
+function waiting() {
+  stage.dir = 'ltr';
+  parkCamera();
+  $('dot').hidden = true;
+  screenEl.innerHTML = `<div class="waiting">${WAIT.map(([l, d, t, staff]) =>
+    `<div lang="${l}" dir="${d}"><div class="h">${t}</div><div class="muted">${staff}</div></div>`).join('')}</div>`;
+  shown = 'waiting';
+}
+function updateLink() {
+  const down = hasState && (!link.es || !link.hub);
+  if (!down) { downSince = 0; $('link').hidden = true; }
+  else if (!downSince) downSince = performance.now();   // shown after 1.5 s, so a short blip does not flash
+}
+function showBanner() {
+  const [a, b] = LINK_TEXT[lastLang] || LINK_TEXT.English, el = $('link');
+  el.dir = lastLang === 'Arabic' ? 'rtl' : 'ltr';
+  el.innerHTML = `<b>${esc(a)}</b>${esc(b)}`;
+  el.hidden = false;
+}
+
+// ---------- progress: the ring and the bar chip fill while a thumb up or a fist is held ----------
+let hold = {pose: null, value: 0}, holdKey = '';
+function onProgress(p) {
+  hold = {pose: (p && p.pose) || null, value: Math.max(0, Math.min(1, +(p && p.value) || 0))};
+  paintHold();
+}
+function paintHold() {
+  const keys = POSE_KEYS[hold.pose] || [];
+  for (const ch of stage.querySelectorAll('.bar .chip[data-k]'))
+    ch.style.setProperty('--hp', (keys.includes(ch.dataset.k) ? hold.value * 100 : 0).toFixed(1) + '%');
+  for (const r of stage.querySelectorAll('.ring')) {
+    const p = r.dataset.pose === hold.pose ? hold.value : 0;
+    r.style.setProperty('--p', p.toFixed(3));
+    r.classList.toggle('zero', p <= 0);
+  }
+}
+
+// ---------- drawing a state ----------
+const NP_WIDTH = /(id="np-fill") style="width:[\d.]+%"/;
+function render(s) {
+  const c = s.content, root = document.documentElement.style;
+  for (const [k, v] of Object.entries(c.theme || {})) root.setProperty('--' + k.replace(/_/g, '-'), v);
+  root.setProperty('--s', c.text_scale || 1);
+  stage.dir = c.dir || 'ltr';
+  stage.lang = LANG_CODE[s.language] || 'en';
+  const key = [s.screen, s.who_step, s.highlight, s.started].join('|');
+  if (key !== holdKey) { holdKey = key; hold = {pose: null, value: 0}; }   // a new screen starts with an empty ring
+  window.lastState = s; hasState = true; lastLang = s.language || 'English';
+  narrate(s);
+  // the same picture is not drawn again (the camera sends often): animations and rings keep going
+  const html = (screens[s.screen] || screens[1])(s, c), same = html.replace(NP_WIDTH, '$1') === shown;
+  if (!same) { parkCamera(); screenEl.innerHTML = html; shown = html.replace(NP_WIDTH, '$1'); }
+  placeCamera();
+  showHand(s);
+  showMove(s);
+  const L = c.labels;
+  $('guide-link').href = 'guide.html?lang=' + (LANG_CODE[s.language] || 'en');
+  $('guide-link').dir = c.dir || 'ltr';
+  $('guide-text').textContent = L.guide_link || 'Gesture guide';
+  $('ctx-main').textContent =
+    `Context: ${s.language} · ${s.visitor_type || 'type not chosen'} · ${s.gender || 'not chosen'} · ${s.view} view · ` +
+    `voice ${c.voice} · text x${c.text_scale} · pace ${s.pace}` + (s.user_id ? ` · user ${s.user_id}` : '');
+  paintHold(); show();
+  if (!same) fitStory();
+  updateLink();
+}
+function fitStory() {             // a long story (more detail, very large text) gets smaller until it fits
+  const el = $('story');
+  if (!el) return;
+  let f = 1;
+  el.style.setProperty('--fit', f);
+  while (el.scrollHeight > el.clientHeight + 1 && f > 0.6) {
+    f = +(f - 0.05).toFixed(2);
+    el.style.setProperty('--fit', f);
+  }
+}
+if (document.fonts) { document.fonts.addEventListener('loadingdone', fitStory); document.fonts.ready.then(fitStory); }
+
+// ---------- the hand dot, the movement just seen, the tips ----------
+function showHand(s) {
+  const d = $('dot'), L = s.content.labels;
+  d.hidden = false;
+  d.classList.toggle('on', !!s.hand);
+  d.title = s.hand ? L.hand_ok : L.no_hand;
+  d.setAttribute('aria-label', d.title);
+}
+let moveSeen = null, toastTimer = 0, tipTimer = 0;
+function pop(el, text, ms, timer) {
+  clearTimeout(timer);
+  el.textContent = text;
+  el.classList.add('show');
+  return setTimeout(() => el.classList.remove('show'), ms);
+}
+function showMove(s) {                 // a short "→ Swipe right" each time the camera saw a movement
+  const g = s.last_gesture, n = g ? g.n : 0;
+  if (moveSeen === null) { moveSeen = n; return; }     // the page just opened: an old movement is not news
+  if (n === moveSeen) return;
+  moveSeen = n;
+  const text = g && s.content.labels['mv_' + g.name];
+  if (!text) return;                                   // e.g. "confirm" from the keyboard demo
+  $('tip').classList.remove('show');
+  toastTimer = pop($('toast'), text, 1300, toastTimer);
+}
+function onTip(key) {                  // why the last movement was not a command: how to do it better
+  const st = window.lastState, text = st && st.content.labels['tip_' + key];
+  if (!text) return;
+  $('toast').classList.remove('show');
+  tipTimer = pop($('tip'), '💡 ' + text, 2600, tipTimer);
+}
+
+// ---------- the live camera picture in the box of screen 3 ----------
+// One <img> for the whole visit (the stream is not opened again on every drawing): it is
+// moved into the box of screen 3, and back to a hidden place before the screen is drawn again.
+let cameraOn = false;
+function parkCamera() { const cam = $('cam'); if (cam.parentNode !== $('cam-home')) $('cam-home').appendChild(cam); }
+function placeCamera() {
+  const box = $('preview'), cam = $('cam');
+  if (!box || !cameraOn) {
+    parkCamera();
+    if (!cameraOn && cam.getAttribute('src')) cam.removeAttribute('src');   // closes the stream
+    if ($('cam-tag')) $('cam-tag').hidden = false;
+    return;
+  }
+  if (!cam.getAttribute('src')) cam.src = '/camera.mjpg';
+  if (cam.parentNode !== box) box.prepend(cam);
+  $('cam-tag').hidden = true;
+}
+function onCamera(on) { cameraOn = on; placeCamera(); }
+
+// ---------- the narrator: reads the story aloud with the browser's own voices (Web Speech API) ----------
+const TTS = window.speechSynthesis || null;
+const LOCALE = {English: 'en-US', Arabic: 'ar-EG', French: 'fr-FR'};
+const FEMALE = new Set(('female woman zira hazel susan linda heera catherine eva aria jenny ava emma michelle ana sonia ' +
+  'libby maisie natasha clara molly emily nancy jane amber ashley cora elizabeth monica sara samantha karen moira tessa ' +
+  'fiona victoria allison serena kate neerja hoda salma zariyah amany fatima laila layla mouna sana rana reem noura amina ' +
+  'iman aysha amal maryam mariam hortense julie denise eloise vivienne brigitte celeste coralie jacqueline josephine ' +
+  'yvette charline ariane sylvie caroline amelie audrey aurelie marie lea').split(' '));
+const MALE = new Set(('male man david mark george richard james ravi sean guy christopher eric roger steffan andrew brian ' +
+  'ryan thomas william liam prabhat connor mitchell davis tony jason brandon jacob kai alex daniel fred naayf shakir hamed ' +
+  'hamdan ali ismael bassel taim fahed rami omar jamal abdullah moaz laith hedi saleh maged majed tarik paul henri remy ' +
+  'lucien antoine jean thierry gerard fabrice claude nicolas alain yves florian').split(' '));
+const SENT = /[^.!?\u061F]+[.!?\u061F]*/g;   // one sentence at a time: short utterances, and pause/resume per sentence
+const CPS = 14;                               // characters read per second at rate 1, for the time on the story screen
+const BOOT = performance.now();
+const bad = new Set();                        // voices that failed twice
+const nar = {key: '', parts: [], i: 0, doneChars: 0, total: 0, status: 'idle', token: 0, voice: null, fails: 0,
+             paused: false, rate: 1, lang: 'English', want: 'female', partStart: 0, timer: 0, watch: 0, utter: null};
+const vid = v => v.voiceURI + '|' + v.name;
+const count = parts => parts.reduce((a, p) => a + p.length, 0);
+const split = text => (String(text).match(SENT) || []).map(p => p.trim()).filter(p => /[\p{L}\p{N}]/u.test(p));
+function genderOf(name) {
+  const words = String(name).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/multilingual/g, '').split(/[^a-z]+/);
+  if (words.some(w => FEMALE.has(w))) return 'female';
+  if (words.some(w => MALE.has(w))) return 'male';
+  return null;
+}
+function pickVoice() {          // the visitor's language first, then a woman's or a man's voice, then the nicer one
+  const loc = (LOCALE[nar.lang] || 'en-US').toLowerCase();
+  let best = null, top = -Infinity;
+  for (const v of TTS.getVoices()) {
+    const vl = String(v.lang || '').replace(/_/g, '-').toLowerCase();
+    if (bad.has(vid(v)) || vl.slice(0, 2) !== loc.slice(0, 2)) continue;
+    const g = genderOf(v.name);
+    let sc = g === nar.want ? 4 : g ? 0 : 1;
+    if (vl === loc) sc += 2;
+    if (/natural|online/i.test(v.name)) sc += 1;
+    sc += v.localService ? 0.5 : (navigator.onLine ? 0 : -3);
+    if (sc > top) { top = sc; best = v; }
+  }
+  return best;
+}
+function stopVoice() {
+  nar.token++;                     // the events of the old utterances are ignored from now on
+  clearTimeout(nar.timer); clearTimeout(nar.watch);
+  nar.partStart = 0;
+  if (TTS) TTS.cancel();
+}
+function later(ms) {               // after cancel() Chrome needs a short break before the next speak()
+  clearTimeout(nar.timer);
+  const my = nar.token;
+  nar.timer = setTimeout(() => { if (my === nar.token) speakNext(); }, ms);
+}
+function narrate(s) {
+  const c = s.content, ex = c.exhibit;
+  const on = !!ex && s.screen === 5;
+  if (!on) {
+    if (nar.key) { stopVoice(); nar.key = ''; nar.voice = null; }
+    nar.status = 'idle';
+    return;
+  }
+  const key = [ex.id, s.language, c.voice, ex.length].join('|'), parts = split(ex.story);
+  if (key !== nar.key) {           // a new story: start from the beginning
+    stopVoice();
+    Object.assign(nar, {key, parts, i: 0, doneChars: 0, total: count(parts), lang: s.language, want: c.voice,
+                        rate: c.speech_rate || 1, fails: 0, voice: null, paused: !!s.paused,
+                        status: !TTS ? 'no_voice' : s.paused ? 'paused' : 'waiting'});
+    if (TTS && !s.paused) later(250);
+    return;
+  }
+  if (parts.length !== nar.parts.length) {   // "more detail": the same story goes on with the extra sentences
+    if (!nar.parts.every((p, j) => p === parts[j])) { nar.key = ''; return narrate(s); }
+    nar.parts = parts; nar.total = count(parts);
+    if (nar.status === 'done') { nar.status = 'waiting'; if (!nar.paused) later(100); }
+  }
+  if (s.paused && !nar.paused) {
+    nar.paused = true;
+    stopVoice();                   // pause() and resume() are not reliable in Chrome: stop, then read this sentence again
+    if (['waiting', 'starting', 'playing'].includes(nar.status)) nar.status = 'paused';
+  } else if (!s.paused && nar.paused) {
+    nar.paused = false;
+    if (nar.status === 'paused') { nar.status = 'waiting'; later(250); }
+  }
+}
+function speakNext() {
+  if (!nar.key || nar.paused || nar.status === 'blocked' || !TTS) return;
+  if (nar.i >= nar.parts.length) { nar.status = 'done'; nar.partStart = 0; return; }
+  if (!TTS.getVoices().length && performance.now() - BOOT < 3000) { nar.status = 'waiting'; later(500); return; }
+  const v = pickVoice();
+  if (!v) { nar.status = 'no_voice'; nar.voice = null; return; }
+  nar.voice = v;
+  const my = nar.token, text = nar.parts[nar.i], u = new SpeechSynthesisUtterance(text), spokeAt = performance.now();
+  let began = false;
+  u.voice = v; u.lang = v.lang; u.rate = nar.rate;
+  u.onstart = () => {
+    if (my !== nar.token) return;
+    began = true; clearTimeout(nar.watch);
+    nar.status = 'playing'; nar.partStart = performance.now();
+  };
+  u.onend = () => {
+    if (my !== nar.token) return;
+    clearTimeout(nar.watch);
+    if (!began && performance.now() - spokeAt < 400) return failed('no-start');   // ended at once: nothing was read
+    nar.fails = 0; nar.doneChars += text.length; nar.i++; nar.partStart = 0;
+    speakNext();
+  };
+  u.onerror = e => { if (my === nar.token) { clearTimeout(nar.watch); failed(e.error || 'error'); } };
+  nar.utter = u;                   // keep a reference: Chrome loses the events of a collected utterance
+  if (nar.status !== 'playing') nar.status = 'starting';
+  if (TTS.paused) TTS.resume();
+  TTS.speak(u);
+  clearTimeout(nar.watch);
+  nar.watch = setTimeout(() => { if (my === nar.token && !began) failed('timeout'); }, 4000);
+}
+function failed(err) {
+  stopVoice();
+  if (err === 'not-allowed') { nar.status = 'blocked'; return; }   // the browser wants one click first: the 🔊 button
+  // stopped from outside (another tab, the system): the sentence is read again; a real error twice: another voice
+  if (err !== 'interrupted' && err !== 'canceled' && nar.voice && ++nar.fails >= 2) { bad.add(vid(nar.voice)); nar.fails = 0; }
+  nar.status = 'waiting';
+  later(300);
+}
+function unblock() {
+  if (nar.status !== 'blocked' || !nar.key) return;
+  nar.status = nar.paused ? 'paused' : 'waiting'; nar.fails = 0;
+  speakNext();                     // inside the click: the browser allows the voice from now on
+}
+addEventListener('click', unblock);
+addEventListener('keydown', unblock);
+if (TTS) {
+  TTS.getVoices();                 // Chrome loads the voice list only when it is asked once
+  TTS.addEventListener('voiceschanged', () => {
+    if (nar.key && !nar.paused && (nar.status === 'waiting' || nar.status === 'no_voice')) { nar.status = 'waiting'; later(100); }
+  });
+  addEventListener('pagehide', () => TTS.cancel());
+}
+function storyDone() {             // characters read so far (an estimate inside the sentence being read)
+  if (nar.status === 'done') return nar.total;
+  let done = nar.doneChars || 0;
+  if (nar.status === 'playing' && nar.partStart && nar.parts[nar.i])
+    done += Math.min(nar.parts[nar.i].length, (performance.now() - nar.partStart) / 1000 * CPS * (nar.rate || 1));
+  return done;
+}
+function storyPct() { return nar.total && nar.key ? Math.min(1, storyDone() / nar.total) * 100 : 0; }
+const fmt = t => { t = Math.max(0, Math.round(t)); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); };
+function show() {                  // every 200 ms: the story progress, the voice button, the banner
+  const reading = !!nar.key;
+  $('voice-btn').hidden = !(reading && nar.status === 'blocked');
+  $('ctx-voice').textContent = reading && nar.voice ? ' · ' + nar.voice.name : '';
+  if (downSince && $('link').hidden && performance.now() - downSince > 1500) showBanner();
+  const fill = $('np-fill'), label = $('np-label'), st = window.lastState;
+  if (!fill || !label || !st || !reading) return;
+  const L = st.content.labels, cps = CPS * (nar.rate || 1), status = nar.status;
+  fill.style.width = (status === 'no_voice' || status === 'blocked' ? 0 : storyPct()).toFixed(1) + '%';
+  const time = '\u2066' + fmt(storyDone() / cps) + ' / ' + fmt(nar.total / cps) + '\u2069';   // isolated: "0:05 / 0:12" in Arabic too
+  label.textContent = status === 'done' ? '✓ ' + L.story_end
+    : status === 'no_voice' ? '🔇 ' + L.no_voice
+    : status === 'blocked' ? '🔇 ' + L.voice_blocked
+    : status === 'paused' ? '❚❚ ' + L.paused + '  ' + time
+    : '▶ ' + L.playing + '  ' + time;
+}
+setInterval(show, 200);
+
+// ---------- live connection to ui_web.py (server-sent events) ----------
+function connect() {
+  const src = new EventSource('/events');
+  src.onopen = () => { link.es = true; updateLink(); };
+  src.onerror = () => {
+    link.es = false; updateLink();
+    if (src.readyState === EventSource.CLOSED) setTimeout(connect, 3000);   // otherwise the browser retries by itself
+  };
+  src.addEventListener('hub', e => { link.hub = e.data === 'true'; updateLink(); });
+  src.addEventListener('progress', e => { try { onProgress(JSON.parse(e.data)); } catch (_) {} });
+  src.addEventListener('tip', e => { try { onTip(JSON.parse(e.data)); } catch (_) {} });
+  src.addEventListener('camera', e => onCamera(e.data === 'true'));
+  src.onmessage = e => {
+    let s = null;
+    try { s = JSON.parse(e.data); } catch (_) {}
+    if (s && s.content) render(s);
+    else if (!hasState) waiting();   // after a restart the last picture stays, under the "Reconnecting" banner
+  };
+}
+waiting();
+connect();
+</script>
+</body>
+</html>

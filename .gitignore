@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+gesture_log.csv
+*.tmp
+profiles.json.bad

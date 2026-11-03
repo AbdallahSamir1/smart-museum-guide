@@ -1,0 +1,421 @@
+{
+ "_note": "A text is either one string, or {f, m, n}: f = Woman (feminine), m = Man (masculine), n = Skip (neutral).",
+ "app": {
+  "English": "Museum Guide",
+  "Arabic": "دليل المتحف",
+  "French": "Guide du musée"
+ },
+ "welcome": {
+  "English": "Welcome",
+  "Arabic": {
+   "f": "أهلًا بكِ",
+   "m": "أهلًا بك",
+   "n": "أهلًا وسهلًا"
+  },
+  "French": {
+   "f": "Bienvenue",
+   "m": "Bienvenu",
+   "n": "Bonjour"
+  }
+ },
+ "s1_title": {
+  "English": "Wave to start",
+  "Arabic": {
+   "f": "لوّحي للبدء",
+   "m": "لوّح للبدء",
+   "n": "التلويح للبدء"
+  },
+  "French": {
+   "f": "Faites signe pour commencer",
+   "m": "Faites signe pour commencer",
+   "n": "Faites signe pour commencer"
+  }
+ },
+ "s1_sub": {
+  "English": "Raise your hand and wave. No touching needed.",
+  "Arabic": {
+   "f": "ارفعي يدكِ ولوّحي، دون أي لمس.",
+   "m": "ارفع يدك ولوّح، دون أي لمس.",
+   "n": "يكفي رفع اليد والتلويح، دون أي لمس."
+  },
+  "French": "Levez la main et faites signe. Sans toucher."
+ },
+ "s1_lang": {
+  "English": "Language: swipe ← → to move, swipe up ↑ to choose",
+  "Arabic": {
+   "f": "اللغة: اسحبي يمينًا أو يسارًا للتنقل، ولأعلى للاختيار",
+   "m": "اللغة: اسحب يمينًا أو يسارًا للتنقل، ولأعلى للاختيار",
+   "n": "اللغة: السحب يمينًا أو يسارًا للتنقل، ولأعلى للاختيار"
+  },
+  "French": "Langue : balayez ← → pour changer, vers le haut ↑ pour choisir"
+ },
+ "s1_privacy": {
+  "English": "The camera only tracks hands and exhibits. No pictures are saved.",
+  "Arabic": "الكاميرا تتابع الأيدي والقطع فقط، ولا يتم حفظ أي صورة.",
+  "French": "La caméra suit seulement les mains et les objets. Aucune image n'est enregistrée."
+ },
+ "s2_title": {
+  "English": "Who is visiting?",
+  "Arabic": "من الزائر؟",
+  "French": "Qui visite ?"
+ },
+ "s2_type": {
+  "English": "Choose the visitor type",
+  "Arabic": "اختيار نوع الزائر",
+  "French": "Choisir le type de visiteur"
+ },
+ "s2_gender": {
+  "English": "Wording, voice and look",
+  "Arabic": "الصيغة والصوت والشكل",
+  "French": "Formulation, voix et style"
+ },
+ "t_adult": {
+  "English": "Adult",
+  "Arabic": "بالغ",
+  "French": "Adulte"
+ },
+ "t_children": {
+  "English": "With children",
+  "Arabic": "مع أطفال",
+  "French": "Avec enfants"
+ },
+ "t_older": {
+  "English": "Older visitor",
+  "Arabic": "زائر كبير السن",
+  "French": "Visiteur âgé"
+ },
+ "g_woman": {
+  "English": "Woman",
+  "Arabic": "امرأة",
+  "French": "Femme"
+ },
+ "g_man": {
+  "English": "Man",
+  "Arabic": "رجل",
+  "French": "Homme"
+ },
+ "g_skip": {
+  "English": "Skip",
+  "Arabic": "تخطي",
+  "French": "Passer"
+ },
+ "s3_title": {
+  "English": "Find your exhibit",
+  "Arabic": {
+   "f": "ابحثي عن قطعتكِ",
+   "m": "ابحث عن قطعتك",
+   "n": "البحث عن القطعة"
+  },
+  "French": "Trouvez votre objet"
+ },
+ "s3_hint": {
+  "English": "The exhibit closest to you is highlighted. Swipe to move.",
+  "Arabic": {
+   "f": "القطعة الأقرب إليكِ مظللة. اسحبي للتنقل.",
+   "m": "القطعة الأقرب إليك مظللة. اسحب للتنقل.",
+   "n": "القطعة الأقرب مظللة. السحب للتنقل."
+  },
+  "French": "L'objet le plus proche est en surbrillance. Balayez pour changer."
+ },
+ "s4_title": {
+  "English": "Is this the one?",
+  "Arabic": "هل هذه هي القطعة؟",
+  "French": "Est-ce bien celui-ci ?"
+ },
+ "s4_yes": {
+  "English": "Yes, tell me more",
+  "Arabic": {
+   "f": "نعم، أخبريني المزيد",
+   "m": "نعم، أخبرني المزيد",
+   "n": "نعم، المزيد"
+  },
+  "French": "Oui, dites-m'en plus"
+ },
+ "s4_no": {
+  "English": "No, choose again",
+  "Arabic": "لا، اختيار آخر",
+  "French": "Non, choisir à nouveau"
+ },
+ "s4_up": {
+  "English": "Swipe up",
+  "Arabic": "سحب لأعلى",
+  "French": "Vers le haut"
+ },
+ "s4_down": {
+  "English": "Swipe down",
+  "Arabic": "سحب لأسفل",
+  "French": "Vers le bas"
+ },
+ "sure": {
+  "English": "{n}% sure",
+  "Arabic": "نسبة التأكد {n}%",
+  "French": "sûr à {n} %"
+ },
+ "playing": {
+  "English": "Playing",
+  "Arabic": "يعمل",
+  "French": "Lecture"
+ },
+ "paused": {
+  "English": "Paused",
+  "Arabic": "متوقف",
+  "French": "En pause"
+ },
+ "story_end": {
+  "English": "Story finished",
+  "Arabic": "انتهت القصة",
+  "French": "Histoire terminée"
+ },
+ "no_voice": {
+  "English": "No voice for this language on this computer",
+  "Arabic": "لا يوجد صوت لهذه اللغة على هذا الجهاز",
+  "French": "Pas de voix pour cette langue sur cet ordinateur"
+ },
+ "voice_blocked": {
+  "English": "Voice off: click 🔊 once",
+  "Arabic": "الصوت مغلق: الضغط على 🔊 مرة واحدة",
+  "French": "Voix coupée : cliquez une fois sur 🔊"
+ },
+ "gestures": {
+  "English": "Gestures",
+  "Arabic": "الإيماءات",
+  "French": "Gestes"
+ },
+ "guide_link": {
+  "English": "Gesture guide",
+  "Arabic": "دليل الإيماءات",
+  "French": "Guide des gestes"
+ },
+ "back_welcome": {
+  "English": "Welcome back",
+  "Arabic": {
+   "f": "أهلًا بعودتكِ",
+   "m": "أهلًا بعودتك",
+   "n": "أهلًا بالعودة"
+  },
+  "French": {
+   "f": "Bon retour",
+   "m": "Bon retour",
+   "n": "Bon retour"
+  }
+ },
+ "gx_wave": {
+  "English": "Wave = start",
+  "Arabic": {
+   "f": "لوّحي = بدء",
+   "m": "لوّح = بدء",
+   "n": "تلويح = بدء"
+  },
+  "French": "Signe = démarrer"
+ },
+ "gx_swipe": {
+  "English": "Swipe = move",
+  "Arabic": {
+   "f": "اسحبي = تنقل",
+   "m": "اسحب = تنقل",
+   "n": "سحب = تنقل"
+  },
+  "French": "Balayer = changer"
+ },
+ "gx_choose": {
+  "English": "Thumb up (hold) = choose",
+  "Arabic": {
+   "f": "ارفعي الإبهام = اختيار",
+   "m": "ارفع الإبهام = اختيار",
+   "n": "رفع الإبهام = اختيار"
+  },
+  "French": "Pouce levé (tenir) = choisir"
+ },
+ "gx_back": {
+  "English": "Thumb down = back",
+  "Arabic": "الإبهام لأسفل = رجوع",
+  "French": "Pouce baissé = retour"
+ },
+ "gx_yes": {
+  "English": "Thumb up (hold) = yes",
+  "Arabic": "رفع الإبهام = نعم",
+  "French": "Pouce levé (tenir) = oui"
+ },
+ "gx_no": {
+  "English": "Thumb down = no",
+  "Arabic": "الإبهام لأسفل = لا",
+  "French": "Pouce baissé = non"
+ },
+ "gx_pause": {
+  "English": "Open palm = pause",
+  "Arabic": {
+   "f": "افتحي كفكِ = إيقاف",
+   "m": "افتح كفك = إيقاف",
+   "n": "كف مفتوح = إيقاف"
+  },
+  "French": "Paume ouverte = pause"
+ },
+ "gx_next": {
+  "English": "Swipe = next exhibit",
+  "Arabic": {
+   "f": "اسحبي = القطعة التالية",
+   "m": "اسحب = القطعة التالية",
+   "n": "سحب = القطعة التالية"
+  },
+  "French": "Balayer = objet suivant"
+ },
+ "gx_detail": {
+  "English": "Thumb up = more detail",
+  "Arabic": "رفع الإبهام = تفاصيل أكثر",
+  "French": "Pouce levé = plus de détails"
+ },
+ "gx_finish": {
+  "English": "Hold fist = finish visit",
+  "Arabic": "قبضة اليد = إنهاء الزيارة",
+  "French": "Poing fermé = terminer"
+ },
+ "gk_next": {
+  "English": "Swipe = next",
+  "Arabic": "سحب = التالي",
+  "French": "Balayer = suivant"
+ },
+ "gk_stop": {
+  "English": "Palm = stop",
+  "Arabic": "كف = قف",
+  "French": "Paume = stop"
+ },
+ "gk_done": {
+  "English": "Fist = done",
+  "Arabic": "قبضة = انتهى",
+  "French": "Poing = fini"
+ },
+ "v_day": {
+  "English": "Day view",
+  "Arabic": "عرض نهاري",
+  "French": "Vue de jour"
+ },
+ "v_evening": {
+  "English": "Evening view",
+  "Arabic": "عرض مسائي",
+  "French": "Vue du soir"
+ },
+ "hand_ok": {
+  "English": "Hand seen",
+  "Arabic": "اليد ظاهرة",
+  "French": "Main vue"
+ },
+ "hand_seen": {
+  "English": "Hand detected",
+  "Arabic": "تم رصد اليد",
+  "French": "Main détectée"
+ },
+ "ex_ok": {
+  "English": "Exhibit tracked",
+  "Arabic": "القطعة ظاهرة",
+  "French": "Objet suivi"
+ },
+ "no_hand": {
+  "English": "Raise your hand",
+  "Arabic": {
+   "f": "ارفعي يدكِ",
+   "m": "ارفع يدك",
+   "n": "رفع اليد أمام الكاميرا"
+  },
+  "French": "Levez la main"
+ },
+ "you_chose": {
+  "English": "You chose",
+  "Arabic": "الاختيار",
+  "French": "Votre choix"
+ },
+ "nearest": {
+  "English": "Nearest to you",
+  "Arabic": "الأقرب",
+  "French": "Le plus proche"
+ },
+ "you_here": {
+  "English": "You are here",
+  "Arabic": "موقعك",
+  "French": "Vous êtes ici"
+ },
+ "d_adult": {
+  "English": "Standard view",
+  "Arabic": "العرض العادي",
+  "French": "Vue standard"
+ },
+ "d_children": {
+  "English": "Short stories, big symbols",
+  "Arabic": "قصص قصيرة ورموز كبيرة",
+  "French": "Histoires courtes, grands symboles"
+ },
+ "d_older": {
+  "English": "Extra large text, longer hold",
+  "Arabic": "نص كبير جدًا ومسك أطول",
+  "French": "Très grand texte, maintien plus long"
+ },
+ "s2_sub": {
+  "English": "This sets the text size, the story length, the hold time, the wording and the look.",
+  "Arabic": "يحدد هذا حجم النص وطول القصة ومدة المسك والصيغة والشكل.",
+  "French": "Cela règle la taille du texte, la longueur de l'histoire, le temps de maintien, la formulation et le style."
+ },
+ "hall": {
+  "English": "Hall",
+  "Arabic": "القاعة",
+  "French": "Salle"
+ },
+ "voice_female": {
+  "English": "Female voice",
+  "Arabic": "صوت نسائي",
+  "French": "Voix féminine"
+ },
+ "voice_male": {
+  "English": "Male voice",
+  "Arabic": "صوت رجالي",
+  "French": "Voix masculine"
+ },
+ "exhibits_found": {
+  "English": "exhibits detected",
+  "Arabic": "قطع مكتشفة",
+  "French": "objets détectés"
+ },
+ "slow_pace": {
+  "English": "Slower pace is on: take your time",
+  "Arabic": "وضع الحركة الأبطأ مفعّل: الوقت أطول لكل حركة",
+  "French": "Rythme lent activé : prenez votre temps"
+ },
+ "camera_off": {
+  "English": "Camera picture appears here",
+  "Arabic": "صورة الكاميرا تظهر هنا",
+  "French": "L'image de la caméra apparaît ici"
+ },
+ "mv_wave": {
+  "English": "👋 Wave",
+  "Arabic": "👋 تلويح",
+  "French": "👋 Signe"
+ },
+ "mv_swipe_right": {
+  "English": "→ Swipe right",
+  "Arabic": "→ سحب لليمين",
+  "French": "→ Vers la droite"
+ },
+ "mv_swipe_left": {
+  "English": "← Swipe left",
+  "Arabic": "← سحب لليسار",
+  "French": "← Vers la gauche"
+ },
+ "mv_confirm": {
+  "English": "Thumb up: OK",
+  "Arabic": "رفع الإبهام: موافق",
+  "French": "Pouce levé : OK"
+ },
+ "mv_back": {
+  "English": "Thumb down: back",
+  "Arabic": "الإبهام لأسفل: رجوع",
+  "French": "Pouce baissé : retour"
+ },
+ "mv_pause_toggle": {
+  "English": "Open palm: pause / play",
+  "Arabic": "كف مفتوح: إيقاف / تشغيل",
+  "French": "Paume ouverte : pause / lecture"
+ },
+ "mv_finish": {
+  "English": "Fist: finish",
+  "Arabic": "قبضة: إنهاء",
+  "French": "Poing : terminer"
+ }
+}

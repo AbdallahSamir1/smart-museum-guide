@@ -1,0 +1,17 @@
+{
+  "U104": {
+    "language": "Arabic",
+    "visitor_type": "adult",
+    "gender": "woman"
+  },
+  "U102": {
+    "language": "Arabic",
+    "visitor_type": "children",
+    "gender": "man"
+  },
+  "U101": {
+    "language": "English",
+    "visitor_type": "adult",
+    "gender": "woman"
+  }
+}

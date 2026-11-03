@@ -1,0 +1,146 @@
+{
+ "golden_mask": {
+  "label": "Golden Funerary Mask",
+  "hall": "B",
+  "name": {
+   "English": "Golden Funerary Mask",
+   "Arabic": "القناع الذهبي الجنائزي",
+   "French": "Masque funéraire en or"
+  },
+  "tag": {
+   "English": "Golden Mask",
+   "Arabic": "القناع الذهبي",
+   "French": "Masque d'or"
+  },
+  "full": {
+   "English": "A mask of beaten gold placed over the face of a young king. It was made so he could be recognised in the afterlife.",
+   "Arabic": "قناع من الذهب المطروق وُضع على وجه ملك شاب، وصُنع لكي يُعرف به في الحياة الأخرى.",
+   "French": "Un masque en or martelé posé sur le visage d'un jeune roi. Il a été fait pour qu'on le reconnaisse dans l'au-delà."
+  },
+  "short": {
+   "English": "A golden mask for a young king.",
+   "Arabic": "قناع ذهبي لملك صغير.",
+   "French": "Un masque en or pour un jeune roi."
+  },
+  "detail": {
+   "English": "Look at the blue stripes. They are glass and stone set into the gold.",
+   "Arabic": "الخطوط الزرقاء من الزجاج والحجر داخل الذهب.",
+   "French": "Regardez les bandes bleues : ce sont du verre et de la pierre incrustés dans l'or."
+  },
+  "photo": "photos/golden_mask.jpg",
+  "credit": "Photo: Dawid Wdowczyk, CC BY 4.0, Wikimedia Commons",
+  "facts": {
+   "English": [
+    "Solid gold, about 10 kg",
+    "Inlaid with lapis lazuli, quartz and coloured glass",
+    "Found by Howard Carter's team in 1925"
+   ],
+   "Arabic": [
+    "من الذهب الخالص، وزنه نحو 10 كجم",
+    "مطعّم باللازورد والكوارتز والزجاج الملوّن",
+    "عثر عليه فريق هوارد كارتر سنة 1925"
+   ],
+   "French": [
+    "Or massif, environ 10 kg",
+    "Incrustations de lapis-lazuli, de quartz et de verre coloré",
+    "Découvert par l'équipe d'Howard Carter en 1925"
+   ]
+  }
+ },
+ "throne": {
+  "label": "Throne",
+  "hall": "B",
+  "name": {
+   "English": "Royal Throne",
+   "Arabic": "العرش الملكي",
+   "French": "Trône royal"
+  },
+  "tag": {
+   "English": "Throne",
+   "Arabic": "العرش",
+   "French": "Trône"
+  },
+  "full": {
+   "English": "A wooden throne covered with gold. The back shows the king and queen together in a quiet family scene.",
+   "Arabic": "عرش خشبي مغطى بالذهب، ويظهر على ظهره الملك والملكة معًا في مشهد عائلي هادئ.",
+   "French": "Un trône en bois couvert d'or. Le dossier montre le roi et la reine ensemble dans une scène familiale calme."
+  },
+  "short": {
+   "English": "A golden chair for the king.",
+   "Arabic": "كرسي ذهبي للملك.",
+   "French": "Une chaise en or pour le roi."
+  },
+  "detail": {
+   "English": "The legs are carved like the legs of a lion.",
+   "Arabic": "أرجل العرش منحوتة على شكل أرجل أسد.",
+   "French": "Les pieds sont sculptés comme des pattes de lion."
+  },
+  "photo": "photos/throne.jpg",
+  "credit": "Photo: Djehouty, CC BY-SA 4.0, Wikimedia Commons",
+  "facts": {
+   "English": [
+    "Wood covered with gold and silver",
+    "The back shows the king and queen Ankhesenamun",
+    "Found in the first room of the tomb in 1922"
+   ],
+   "Arabic": [
+    "خشب مغطى بالذهب والفضة",
+    "ظهر العرش يصوّر الملك والملكة عنخ إسن آمون",
+    "عثر عليه في الحجرة الأولى من المقبرة سنة 1922"
+   ],
+   "French": [
+    "Bois recouvert d'or et d'argent",
+    "Le dossier montre le roi et la reine Ânkhesenamon",
+    "Trouvé dans la première salle du tombeau en 1922"
+   ]
+  }
+ },
+ "sarcophagus": {
+  "label": "Sarcophagus",
+  "hall": "B",
+  "name": {
+   "English": "Stone Sarcophagus",
+   "Arabic": "التابوت الحجري",
+   "French": "Sarcophage en pierre"
+  },
+  "tag": {
+   "English": "Sarcophagus",
+   "Arabic": "التابوت",
+   "French": "Sarcophage"
+  },
+  "full": {
+   "English": "A large stone coffin that held the wooden coffins inside it. Gods with open wings protect each corner.",
+   "Arabic": "تابوت حجري كبير كانت بداخله التوابيت الخشبية، وتحمي أركانه آلهة بأجنحة مفتوحة.",
+   "French": "Un grand cercueil en pierre qui contenait les cercueils en bois. Des déesses aux ailes ouvertes protègent chaque coin."
+  },
+  "short": {
+   "English": "A big stone box that kept the king safe.",
+   "Arabic": "صندوق حجري كبير حمى الملك.",
+   "French": "Une grande boîte en pierre qui protégeait le roi."
+  },
+  "detail": {
+   "English": "The lid was made from a different stone from the box.",
+   "Arabic": "الغطاء مصنوع من حجر مختلف عن حجر الصندوق.",
+   "French": "Le couvercle est fait d'une autre pierre que la cuve."
+  },
+  "photo": "photos/sarcophagus.jpg",
+  "credit": "Photo: Romagy, CC BY-SA 4.0, Wikimedia Commons",
+  "facts": {
+   "English": [
+    "A box of yellow quartzite with a granite lid",
+    "Four goddesses spread their wings at the corners",
+    "It is still in the tomb (KV62) in the Valley of the Kings"
+   ],
+   "Arabic": [
+    "صندوق من الكوارتزيت الأصفر بغطاء من الجرانيت",
+    "أربع إلهات تفرد أجنحتها عند الأركان",
+    "ما زال داخل المقبرة KV62 في وادي الملوك"
+   ],
+   "French": [
+    "Une cuve en quartzite jaune avec un couvercle en granit",
+    "Quatre déesses déploient leurs ailes aux angles",
+    "Il est toujours dans le tombeau (KV62), dans la Vallée des Rois"
+   ]
+  }
+ }
+}

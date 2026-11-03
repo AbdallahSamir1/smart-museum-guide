@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gesture guide · Smart Museum Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- not render-blocking: without internet the guide still opens at once, with the system fonts -->
+<link rel="stylesheet" media="print" onload="this.media='all'"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=Playfair+Display:wght@700&family=Cairo:wght@400;700&display=swap">
+<style>
+  :root { --bg:#0f1726; --card:#1b2a41; --border:#2c3d5a; --text:#fff; --muted:#8ea0b8;
+          --accent:#1f8f86; --accent-text:#6fe0c0; --warn:#e3b55a; }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); color: var(--text); scroll-behavior: smooth; }
+  body { margin: 0; font: 17px/1.55 'DM Sans', 'Cairo', sans-serif; }
+  [dir=rtl] body { font-family: 'Cairo', 'DM Sans', sans-serif; }
+  .h { font-family: 'Playfair Display', 'Cairo', serif; font-weight: 700; }
+  [dir=rtl] .h { font-family: 'Cairo', serif; }
+  a { color: var(--accent-text); }
+  :focus-visible { outline: 3px solid var(--accent-text); outline-offset: 2px; }
+
+  .top { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 92%, transparent);
+         backdrop-filter: blur(6px); border-bottom: 1px solid var(--border); }
+  .top .in { max-width: 1180px; margin: 0 auto; padding: 10px 24px; display: flex; gap: 12px;
+             align-items: center; flex-wrap: wrap; }
+  .back { font-weight: 700; text-decoration: none; }
+  .langs { margin-inline-start: auto; display: flex; gap: 8px; }
+  .langs button { font: inherit; font-size: 15px; font-weight: 700; padding: 7px 16px; border-radius: 999px;
+                  background: var(--card); color: var(--muted); border: 1.5px solid var(--border); cursor: pointer; }
+  .langs button[aria-pressed=true] { background: var(--accent); color: #fff; border-color: var(--accent-text); }
+
+  main { max-width: 1180px; margin: 0 auto; padding: 0 24px 64px; }
+  .hero { padding: 34px 0 4px; }
+  .hero h1 { font-size: clamp(34px, 5vw, 52px); margin: 0 0 6px; line-height: 1.1; }
+  .hero p { color: var(--muted); font-size: 20px; margin: 0; }
+  section { margin-top: 46px; scroll-margin-top: 72px; }
+  h2 { font-size: 30px; margin: 0 0 14px; }
+
+  .tips { counter-reset: tip; list-style: none; padding: 0; margin: 0; display: grid; gap: 12px;
+          grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+  .tips li { counter-increment: tip; position: relative; background: var(--card); border: 1.5px solid var(--border);
+             border-radius: 14px; padding: 14px 16px; padding-inline-start: 58px; }
+  .tips li::before { content: counter(tip); position: absolute; inset-inline-start: 14px; top: 13px; width: 30px;
+                     height: 30px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700;
+                     display: grid; place-items: center; }
+
+  .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+  .card { background: var(--card); border: 1.5px solid var(--border); border-radius: 18px; padding: 18px 20px 20px; }
+  .card .pic { font-size: 64px; line-height: 1.1; }
+  .card h3 { font-size: 26px; margin: 4px 0 0; line-height: 1.2; }
+  .meaning { color: var(--accent-text); font-weight: 700; font-size: 19px; margin: 2px 0 10px; }
+  .card ol { margin: 0 0 12px; padding-inline-start: 22px; }
+  .card ol li { margin-bottom: 4px; }
+  .meta { display: flex; gap: 6px 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; font-size: 15px; }
+  .meta b { color: var(--muted); margin-inline-end: 2px; }
+  .chip { display: inline-block; padding: 3px 11px; border-radius: 999px; background: var(--bg);
+          border: 1px solid var(--border); }
+
+  .table-wrap { overflow-x: auto; border: 1.5px solid var(--border); border-radius: 16px; }
+  table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 16px; }
+  th, td { padding: 12px 14px; text-align: start; vertical-align: top; border-bottom: 1px solid var(--border); }
+  thead th { background: var(--card); color: var(--muted); font-size: 15px; }
+  tbody th { white-space: nowrap; }
+  tbody tr:last-child > * { border-bottom: none; }
+
+  .help { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+  .help div { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 18px; }
+  .help h3 { font-size: 18px; margin: 0 0 4px; }
+  .help p { margin: 0; color: #d6deea; }
+  footer { margin-top: 56px; color: var(--muted); font-size: 14px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="top"><div class="in">
+  <a class="back" id="back" href="index.html"></a>
+  <div class="langs" id="langs" role="group"></div>
+</div></div>
+<main id="app"></main>
+<script>
+const KEYS = ["wave", "swipe_right", "swipe_left", "thumb_up", "thumb_down", "open_palm", "fist"];
+const PICS = {wave: "👋", swipe_right: "👉", swipe_left: "👈", thumb_up: "👍", thumb_down: "👎", open_palm: "✋", fist: "✊"};
+const LANGS = [["en", "English"], ["ar", "العربية"], ["fr", "Français"]];
+
+const T = {
+  en: {
+    dir: "ltr",
+    title: "Gesture guide",
+    sub: "How to use the Smart Museum Guide with your hand. No touching needed.",
+    back: "← Back to the guide screen",
+    langGroup: "Language",
+    s_before: "Before you start",
+    tips: [
+      "Stand 0.5 to 1.5 m in front of the screen.",
+      "Use one hand and keep it in the camera picture. The small dot at the top of the screen turns green when the camera sees your hand.",
+      "Have light on your hand. A bright window behind you makes the hand hard to see.",
+      "Hold a pose steady for a moment. The screen shows the gesture it saw.",
+      "Left or right hand both work."
+    ],
+    s_gestures: "The seven gestures",
+    where: "Where:", time: "How long:",
+    g: {
+      wave: { name: "Wave", meaning: "Start the guide",
+        steps: ["Raise your hand.", "Wave it from side to side 2 or 3 times."],
+        where: ["Screen 1: start"], time: "About 1 to 2 seconds of waving" },
+      swipe_right: { name: "Swipe right", meaning: "Next",
+        steps: ["Move your open hand quickly to your right, about 20 to 40 cm.", "Stop, then bring the hand back slowly."],
+        where: ["Screen 1: language", "Screen 2: visitor type, then Woman/Man", "Screen 3: exhibit", "Screen 5: next exhibit"],
+        time: "Under 1 second (older visitors: up to 1 second)" },
+      swipe_left: { name: "Swipe left", meaning: "Previous",
+        steps: ["Move your open hand quickly to your left, about 20 to 40 cm.", "Stop, then bring the hand back slowly."],
+        where: ["Screen 1: language", "Screen 2: visitor type, then Woman/Man", "Screen 3: exhibit", "Screen 5: previous exhibit"],
+        time: "Under 1 second (older visitors: up to 1 second)" },
+      thumb_up: { name: "Thumb up (hold)", meaning: "Choose / Yes / More detail",
+        steps: ["Make a fist with the thumb pointing up.", "Hold it until the ring on the screen is full."],
+        where: ["Screens 1 to 3: choose", "Screen 4: yes", "Screen 5: more detail"], time: "1 second (older visitors: 2 seconds)" },
+      thumb_down: { name: "Thumb down", meaning: "Back / No",
+        steps: ["Make a fist with the thumb pointing down."],
+        where: ["Screens 2 and 3: back one step", "Screen 4: no, choose again"], time: "At once" },
+      open_palm: { name: "Open palm", meaning: "Pause / Play the story",
+        steps: ["Show your open hand, fingers spread, and keep it still.", "The story pauses. Do it again to play on."],
+        where: ["Screen 5 (the story)"], time: "About half a second" },
+      fist: { name: "Fist (hold)", meaning: "Finish the visit",
+        steps: ["Close your hand into a fist.", "Hold it until the ring is full."],
+        where: ["Screen 5 (the story)"], time: "1.5 seconds (older visitors: 2 seconds)" }
+    },
+    s_table: "Which gesture works where",
+    cols: ["Screen", "Wave", "Swipe ← →", "Thumb up", "Thumb down", "Open palm", "Fist"],
+    rows: [
+      ["1 Welcome", "Start", "Language (after the wave)", "Confirm language", "", "", ""],
+      ["2 Who is visiting?", "", "Visitor type / Woman-Man", "Choose", "Back", "", ""],
+      ["3 Find your exhibit", "", "Exhibit", "Choose", "Back", "", ""],
+      ["4 Is this the one?", "", "", "Yes", "No", "", ""],
+      ["5 Story", "", "Next / previous exhibit", "More detail", "", "Pause / play", "Finish the visit"]
+    ],
+    s_help: "If something goes wrong",
+    help: [
+      ["Nothing happens", "Look at the dot at the top: if it is grey, step back so the whole hand is in the picture, and add light."],
+      ["The swipe is missed", "Move faster and a little further, then stop for a moment."],
+      ["The wrong way was taken", "After a swipe, bring the hand back slowly. A quick move back can count as a swipe the other way."],
+      ["The guide went back to the welcome screen", "After 1 minute with no hand in the picture (3 minutes while a story is playing) the visit ends by itself. Wave to start again."],
+      ["No voice for the story?", "Click 🔊 once on the screen. If your language has no voice, add it in Windows Settings → Time & language → Speech → Add voices."],
+      ["Still stuck?", "Ask a staff member nearby."]
+    ],
+    foot: "Smart Museum Guide · gestures are read from the camera picture only, nothing is saved."
+  },
+  ar: {
+    dir: "rtl",
+    title: "دليل الإيماءات",
+    sub: "كيف تستخدم دليل المتحف الذكي بيدك. لا حاجة للمس الشاشة.",
+    back: "← العودة إلى شاشة الدليل",
+    langGroup: "اللغة",
+    s_before: "قبل أن تبدأ",
+    tips: [
+      "قف على بعد نصف متر إلى متر ونصف أمام الشاشة.",
+      "استخدم يدًا واحدة وأبقها داخل صورة الكاميرا. تتحول النقطة الصغيرة أعلى الشاشة إلى الأخضر عندما ترى الكاميرا يدك.",
+      "تأكد من وجود ضوء على اليد. النافذة المضيئة خلفك تجعل اليد صعبة الرؤية.",
+      "ثبّت الوضعية لحظة. تعرض الشاشة الإيماءة التي رأتها.",
+      "اليد اليمنى واليسرى كلتاهما تعملان."
+    ],
+    s_gestures: "الإيماءات السبع",
+    where: "أين:", time: "كم من الوقت:",
+    g: {
+      wave: { name: "تلويح", meaning: "بدء الدليل",
+        steps: ["ارفع يدك.", "لوّح بها يمينًا ويسارًا مرتين أو ثلاثًا."],
+        where: ["الشاشة 1: البدء"], time: "نحو ثانية إلى ثانيتين من التلويح" },
+      swipe_right: { name: "سحب لليمين", meaning: "التالي",
+        steps: ["حرّك يدك المفتوحة بسرعة إلى اليمين، نحو 20 إلى 40 سم.", "توقف، ثم أعد اليد ببطء."],
+        where: ["الشاشة 1: اللغة", "الشاشة 2: نوع الزائر ثم امرأة/رجل", "الشاشة 3: القطعة", "الشاشة 5: القطعة التالية"],
+        time: "أقل من ثانية (كبار السن: حتى ثانية)" },
+      swipe_left: { name: "سحب لليسار", meaning: "السابق",
+        steps: ["حرّك يدك المفتوحة بسرعة إلى اليسار، نحو 20 إلى 40 سم.", "توقف، ثم أعد اليد ببطء."],
+        where: ["الشاشة 1: اللغة", "الشاشة 2: نوع الزائر ثم امرأة/رجل", "الشاشة 3: القطعة", "الشاشة 5: القطعة السابقة"],
+        time: "أقل من ثانية (كبار السن: حتى ثانية)" },
+      thumb_up: { name: "رفع الإبهام (مع الثبات)", meaning: "اختيار / نعم / تفاصيل أكثر",
+        steps: ["اقبض يدك مع رفع الإبهام لأعلى.", "ثبّتها حتى تمتلئ الحلقة على الشاشة."],
+        where: ["الشاشات 1 إلى 3: اختيار", "الشاشة 4: نعم", "الشاشة 5: تفاصيل أكثر"], time: "ثانية واحدة (كبار السن: ثانيتان)" },
+      thumb_down: { name: "الإبهام لأسفل", meaning: "رجوع / لا",
+        steps: ["اقبض يدك مع توجيه الإبهام لأسفل."],
+        where: ["الشاشتان 2 و3: رجوع خطوة", "الشاشة 4: لا، اختيار من جديد"], time: "فورًا" },
+      open_palm: { name: "كف مفتوح", meaning: "إيقاف / تشغيل القصة",
+        steps: ["أظهر كفك مفتوحًا بأصابع متباعدة وأبقه ثابتًا.", "تتوقف القصة. كرر الإيماءة لتكملها."],
+        where: ["الشاشة 5 (القصة)"], time: "نحو نصف ثانية" },
+      fist: { name: "قبضة (مع الثبات)", meaning: "إنهاء الزيارة",
+        steps: ["أغلق يدك على شكل قبضة.", "ثبّتها حتى تمتلئ الحلقة."],
+        where: ["الشاشة 5 (القصة)"], time: "ثانية ونصف (كبار السن: ثانيتان)" }
+    },
+    s_table: "أي إيماءة تعمل في أي شاشة",
+    cols: ["الشاشة", "تلويح", "سحب ← →", "رفع الإبهام", "الإبهام لأسفل", "كف مفتوح", "قبضة"],
+    rows: [
+      ["1 الترحيب", "بدء", "اللغة (بعد التلويح)", "تأكيد اللغة", "", "", ""],
+      ["2 من الزائر؟", "", "نوع الزائر / امرأة-رجل", "اختيار", "رجوع", "", ""],
+      ["3 اعثر على قطعتك", "", "القطعة", "اختيار", "رجوع", "", ""],
+      ["4 هل هذه هي؟", "", "", "نعم", "لا", "", ""],
+      ["5 القصة", "", "القطعة التالية / السابقة", "تفاصيل أكثر", "", "إيقاف / تشغيل", "إنهاء الزيارة"]
+    ],
+    s_help: "إذا حدث خطأ",
+    help: [
+      ["لا يحدث شيء", "انظر إلى النقطة أعلى الشاشة: إذا كانت رمادية فتراجع إلى الخلف ليظهر كامل الكف في الصورة وأضف ضوءًا."],
+      ["لم يُقرأ السحب", "حرّك اليد أسرع وأبعد قليلًا ثم توقف لحظة."],
+      ["ذهب الاتجاه الخطأ", "بعد السحب أعد اليد ببطء. الرجوع السريع قد يُحسب سحبًا في الاتجاه الآخر."],
+      ["عاد الدليل إلى شاشة الترحيب", "بعد دقيقة بلا يد في الصورة (3 دقائق أثناء تشغيل القصة) تنتهي الزيارة تلقائيًا. لوّح لتبدأ من جديد."],
+      ["لا صوت للقصة؟", "اضغط 🔊 مرة على الشاشة. إذا لم تكن للغتك أصوات فأضفها من إعدادات ويندوز ← الوقت واللغة ← الكلام ← إضافة أصوات."],
+      ["ما زالت المشكلة؟", "اسأل أي موظف قريب."]
+    ],
+    foot: "دليل المتحف الذكي · تُقرأ الإيماءات من صورة الكاميرا فقط ولا يُحفظ شيء."
+  },
+  fr: {
+    dir: "ltr",
+    title: "Guide des gestes",
+    sub: "Comment utiliser le Guide du musée intelligent avec la main. Aucun contact nécessaire.",
+    back: "← Retour à l'écran du guide",
+    langGroup: "Langue",
+    s_before: "Avant de commencer",
+    tips: [
+      "Placez-vous à 0,5 à 1,5 m de l'écran.",
+      "Utilisez une seule main et gardez-la dans l'image de la caméra. Le petit point en haut de l'écran devient vert quand la caméra voit votre main.",
+      "Éclairez votre main. Une fenêtre lumineuse derrière vous rend la main difficile à voir.",
+      "Tenez la pose un instant. L'écran affiche le geste qu'il a vu.",
+      "La main gauche ou droite fonctionne."
+    ],
+    s_gestures: "Les sept gestes",
+    where: "Où :", time: "Combien de temps :",
+    g: {
+      wave: { name: "Salut", meaning: "Démarrer le guide",
+        steps: ["Levez la main.", "Agitez-la de gauche à droite 2 ou 3 fois."],
+        where: ["Écran 1 : démarrer"], time: "1 à 2 secondes de salut" },
+      swipe_right: { name: "Balayage à droite", meaning: "Suivant",
+        steps: ["Déplacez rapidement la main ouverte vers la droite, 20 à 40 cm.", "Arrêtez-vous, puis ramenez la main lentement."],
+        where: ["Écran 1 : langue", "Écran 2 : type de visiteur, puis Femme/Homme", "Écran 3 : objet", "Écran 5 : objet suivant"],
+        time: "Moins d'une seconde (visiteurs âgés : jusqu'à 1 seconde)" },
+      swipe_left: { name: "Balayage à gauche", meaning: "Précédent",
+        steps: ["Déplacez rapidement la main ouverte vers la gauche, 20 à 40 cm.", "Arrêtez-vous, puis ramenez la main lentement."],
+        where: ["Écran 1 : langue", "Écran 2 : type de visiteur, puis Femme/Homme", "Écran 3 : objet", "Écran 5 : objet précédent"],
+        time: "Moins d'une seconde (visiteurs âgés : jusqu'à 1 seconde)" },
+      thumb_up: { name: "Pouce levé (tenir)", meaning: "Choisir / Oui / Plus de détails",
+        steps: ["Fermez le poing, pouce vers le haut.", "Tenez jusqu'à ce que l'anneau soit plein."],
+        where: ["Écrans 1 à 3 : choisir", "Écran 4 : oui", "Écran 5 : plus de détails"], time: "1 seconde (visiteurs âgés : 2 secondes)" },
+      thumb_down: { name: "Pouce baissé", meaning: "Retour / Non",
+        steps: ["Fermez le poing, pouce vers le bas."],
+        where: ["Écrans 2 et 3 : retour d'une étape", "Écran 4 : non, choisir à nouveau"], time: "Tout de suite" },
+      open_palm: { name: "Paume ouverte", meaning: "Pause / Lecture de l'histoire",
+        steps: ["Montrez la main ouverte, doigts écartés, sans bouger.", "L'histoire se met en pause. Refaites le geste pour reprendre."],
+        where: ["Écran 5 (l'histoire)"], time: "Environ une demi-seconde" },
+      fist: { name: "Poing (tenir)", meaning: "Terminer la visite",
+        steps: ["Fermez la main en poing.", "Tenez jusqu'à ce que l'anneau soit plein."],
+        where: ["Écran 5 (l'histoire)"], time: "1,5 seconde (visiteurs âgés : 2 secondes)" }
+    },
+    s_table: "Quel geste marche sur quel écran",
+    cols: ["Écran", "Salut", "Balayage ← →", "Pouce levé", "Pouce baissé", "Paume ouverte", "Poing"],
+    rows: [
+      ["1 Accueil", "Démarrer", "Langue (après le salut)", "Valider la langue", "", "", ""],
+      ["2 Qui visite ?", "", "Type de visiteur / Femme-Homme", "Choisir", "Retour", "", ""],
+      ["3 Trouvez votre objet", "", "Objet", "Choisir", "Retour", "", ""],
+      ["4 C'est celui-ci ?", "", "", "Oui", "Non", "", ""],
+      ["5 Histoire", "", "Objet suivant / précédent", "Plus de détails", "", "Pause / lecture", "Terminer la visite"]
+    ],
+    s_help: "En cas de problème",
+    help: [
+      ["Rien ne se passe", "Regardez le point en haut : s'il est gris, reculez pour que toute la main soit dans l'image et ajoutez de la lumière."],
+      ["Le balayage n'est pas lu", "Allez plus vite et un peu plus loin, puis arrêtez-vous un instant."],
+      ["Mauvais sens", "Après un balayage, ramenez la main lentement. Un retour rapide peut compter comme un balayage dans l'autre sens."],
+      ["Le guide est revenu à l'accueil", "Après 1 minute sans main dans l'image (3 minutes pendant une histoire), la visite se termine seule. Faites un salut pour recommencer."],
+      ["Pas de voix pour l'histoire ?", "Cliquez une fois sur 🔊. Si votre langue n'a pas de voix, ajoutez-la dans Paramètres Windows → Heure et langue → Voix → Ajouter des voix."],
+      ["Toujours bloqué ?", "Demandez à un membre du personnel."]
+    ],
+    foot: "Guide du musée intelligent · les gestes sont lus sur l'image de la caméra seulement, rien n'est enregistré."
+  }
+};
+
+const h = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+
+function render(t) {
+  const cards = KEYS.map(k => {
+    const g = t.g[k];
+    return `<article class="card" id="${k}">
+      <div class="pic" aria-hidden="true">${PICS[k]}</div>
+      <h3 class="h">${h(g.name)}</h3>
+      <div class="meaning">${h(g.meaning)}</div>
+      <ol>${g.steps.map(s => `<li>${h(s)}</li>`).join("")}</ol>
+      <div class="meta"><b>${h(t.where)}</b>${g.where.map(w => `<span class="chip">${h(w)}</span>`).join("")}</div>
+      <div class="meta"><b>${h(t.time)}</b><span>${h(g.time)}</span></div>
+    </article>`;
+  }).join("");
+  const table = `<div class="table-wrap"><table>
+    <thead><tr>${t.cols.map(c => `<th>${h(c)}</th>`).join("")}</tr></thead>
+    <tbody>${t.rows.map(r => `<tr><th scope="row">${h(r[0])}</th>${r.slice(1).map(c => `<td>${h(c)}</td>`).join("")}</tr>`).join("")}</tbody>
+  </table></div>`;
+  $app.innerHTML = `
+    <div class="hero"><h1 class="h">${h(t.title)}</h1><p>${h(t.sub)}</p></div>
+    <section><h2 class="h">${h(t.s_before)}</h2><ol class="tips">${t.tips.map(x => `<li>${h(x)}</li>`).join("")}</ol></section>
+    <section><h2 class="h">${h(t.s_gestures)}</h2><div class="grid">${cards}</div></section>
+    <section><h2 class="h">${h(t.s_table)}</h2>${table}</section>
+    <section><h2 class="h">${h(t.s_help)}</h2><div class="help">${t.help.map(([a, b]) => `<div><h3>${h(a)}</h3><p>${h(b)}</p></div>`).join("")}</div></section>
+    <footer>${h(t.foot)}</footer>`;
+}
+
+const $app = document.getElementById("app");
+function setLang(code, keepUrl) {
+  const t = T[code] || T.en;
+  code = T[code] ? code : "en";
+  document.documentElement.lang = code;
+  document.documentElement.dir = t.dir;
+  document.title = t.title + " · Smart Museum Guide";
+  const back = document.getElementById("back");
+  back.textContent = t.back;
+  back.href = "index.html";
+  const langs = document.getElementById("langs");
+  langs.setAttribute("aria-label", t.langGroup);
+  langs.innerHTML = LANGS.map(([c, n]) => `<button type="button" data-l="${c}" aria-pressed="${c === code}">${n}</button>`).join("");
+  for (const b of langs.querySelectorAll("button")) b.onclick = () => setLang(b.dataset.l);
+  render(t);
+  if (!keepUrl) history.replaceState(null, "", "?lang=" + code);
+}
+function firstLang() {
+  const q = new URLSearchParams(location.search).get("lang");
+  if (T[q]) return q;
+  const n = (navigator.language || "en").slice(0, 2);
+  return T[n] ? n : "en";
+}
+setLang(firstLang(), true);
+</script>
+</body>
+</html>
